@@ -318,7 +318,7 @@ RAW_CATALOG = [
 ]
 
 # ── Data generation (controlled seed to hit resume metrics) ───
-@st.cache_data
+@st.cache_resource
 def build_database():
     np.random.seed(42)
     random.seed(42)
@@ -554,6 +554,31 @@ def get_metrics(_conn):
 
 m = get_metrics(conn)
 
+# ── Scenarios ──────────────────────────────────────────────────
+SCENARIOS = {
+    "Normal Operations": {
+        "icon": "✅", "color": "#10B981",
+        "desc": "Standard daily network state — seed-generated demo data.",
+        "overrides": {},
+        "banner": None,
+        "note": None,
+    },
+    "Critical Shortage Alert": {
+        "icon": "🚨", "color": "#EF4444",
+        "desc": "Simulates a supply disruption across 3 sites.",
+        "overrides": {"stockouts": 7, "exp_risk_val": 241000},
+        "banner": "SUPPLY DISRUPTION DETECTED — 7 items below ROP across Main Campus, Long Island, and Cobble Hill. Immediate substitution and transfer required.",
+        "note": None,
+    },
+    "Post-Cycle Audit (Wk 6)": {
+        "icon": "📋", "color": "#3B82F6",
+        "desc": "State after 6 weeks with LabTrack — defects resolved, stockouts cleared.",
+        "overrides": {"defects": 6, "stockouts": 1},
+        "banner": None,
+        "note": "52% reduction in setup defects achieved (12 → 6). 2 of 3 stockouts resolved through cross-site transfers.",
+    },
+}
+
 # ── Sidebar ────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
@@ -576,12 +601,40 @@ with st.sidebar:
         '6 SITES · 3PL NETWORK</span>', unsafe_allow_html=True)
     st.markdown("---")
 
-    # Optional Groq key for comm plan generator
+    # Demo dataset info
+    st.markdown('<p style="font-size:12px;font-weight:700;color:#F0F4FF;margin-bottom:4px;">📊 Demo Dataset</p>', unsafe_allow_html=True)
+    st.markdown('<p style="font-size:11px;color:#7B90AC;margin:0;line-height:1.6;">'
+                '220 simulated lot-controlled SKUs · 6 NYU Langone-inspired sites · '
+                'Fixed seed (reproducible) · All metrics match resume claims</p>', unsafe_allow_html=True)
+    st.markdown("---")
+
+    # Scenario selector
+    st.markdown('<p style="font-size:12px;font-weight:700;color:#F0F4FF;margin-bottom:6px;">🎬 Demo Scenario</p>', unsafe_allow_html=True)
+    scenario_name = st.radio(
+        "scenario", list(SCENARIOS.keys()),
+        label_visibility="collapsed",
+        help="Switch scenarios to show different operational states during a demo.",
+    )
+    scen = SCENARIOS[scenario_name]
+    st.markdown(
+        f'<div style="background:rgba(0,0,0,.2);border:1px solid #1C2A3E;border-radius:8px;'
+        f'padding:8px 10px;font-size:11px;color:#7B90AC;margin-top:4px;">'
+        f'<span style="color:{scen["color"]};font-weight:700;">{scen["icon"]} {scenario_name}</span>'
+        f'<br>{scen["desc"]}</div>', unsafe_allow_html=True)
+    st.markdown("---")
+
+    # Guided tour toggle
+    guided_tour = st.toggle(
+        "🗺 Guided Tour", value=False,
+        help="Adds explanatory callouts on each tab — useful when presenting to stakeholders.",
+    )
+    st.markdown("---")
+
+    # Groq key
     groq_key = st.text_input(
-        "Groq API Key (optional)",
-        type="password",
+        "Groq API Key (optional)", type="password",
         placeholder="gsk_... (for AI comm. plans)",
-        help="Add your Groq key to unlock AI-generated communication plans in the Disruption tab.",
+        help="Unlocks AI-generated communication plans in the Disruption tab.",
     )
     st.markdown("---")
     st.markdown("**Network**")
@@ -594,6 +647,11 @@ with st.sidebar:
     st.markdown(
         f'<p style="font-size:11px;color:#3B4D63;">Last synced: {TODAY.strftime("%b %d, %Y")}</p>',
         unsafe_allow_html=True)
+
+# ── Apply scenario overrides to metrics ────────────────────────
+m_display = dict(m)
+for k, v in scen["overrides"].items():
+    m_display[k] = v
 
 # ── Plotly theme ───────────────────────────────────────────────
 PLOT_LAYOUT = dict(
@@ -615,15 +673,34 @@ t1, t2, t3, t4 = st.tabs([
 # ════════════════════════════════════════════════════════════════
 with t1:
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total SKUs in Network",    f"{m['total_skus']:,}",
+    c1.metric("Total SKUs in Network",    f"{m_display['total_skus']:,}",
               help="Lot-controlled SKUs across all 6 sites")
     c2.metric("⚠ Expiration Risk Value",
-              f"${m['exp_risk_val']:,.0f}",
+              f"${m_display['exp_risk_val']:,.0f}",
               help="Inventory value expiring in ≤60 days")
-    c3.metric("🔴 Active Stockout Risks",  str(m["stockouts"]),
-              help="Items where total stock < reorder point")
-    c4.metric("⚙ Open Setup Defects",     str(m["defects"]),
-              help="Items with missing routing, reorder, or integration params")
+    c3.metric("🔴 Active Stockout Risks",  str(m_display["stockouts"]),
+              help="Items where total stock < reorder point",
+              delta=str(m_display["stockouts"] - m["stockouts"]) if m_display["stockouts"] != m["stockouts"] else None,
+              delta_color="inverse")
+    c4.metric("⚙ Open Setup Defects",     str(m_display["defects"]),
+              help="Items with missing routing, reorder, or integration params",
+              delta=str(m_display["defects"] - m["defects"]) if m_display["defects"] != m["defects"] else None,
+              delta_color="inverse")
+
+    # Scenario banner
+    if scen["banner"]:
+        st.error(f"🚨 {scen['banner']}")
+    if scen["note"]:
+        st.success(f"✅ {scen['note']}")
+
+    if guided_tour:
+        st.info(
+            "**Overview tab** — The four metric cards at the top are your daily pulse check. "
+            "Expiration Risk Value and Stockout Risks are the two numbers that matter most for clinical continuity. "
+            "The charts below break down inventory value by category and flag the distribution of expiring items. "
+            "Scroll down to the Critical Alerts table to see the 15 most urgent items ranked by severity.",
+            icon="🗺"
+        )
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -732,6 +809,15 @@ with t1:
 with t2:
     st.markdown("##### Lot-Controlled Inventory — Full Network View")
 
+    if guided_tour:
+        st.info(
+            "**Lot Tracker tab** — This is the lot-level visibility layer. Every SKU is tracked by "
+            "lot number, expiration date, and site-level stock position — the core requirement for "
+            "3PL distribution traceability. Use the filters to isolate expiring items at a specific site. "
+            "The 'Days Left' column drives the 30/60/90-day alert tiers. Export CSV to share with procurement.",
+            icon="🗺"
+        )
+
     f1, f2, f3 = st.columns(3)
     site_opts = ["All Sites"] + [s[1] for s in SITES]
     cat_opts  = ["All Categories"] + sorted(items_df["category"].unique().tolist())
@@ -792,6 +878,15 @@ with t2:
 # ════════════════════════════════════════════════════════════════
 with t3:
     st.markdown("##### Item Onboarding & Setup Status")
+
+    if guided_tour:
+        st.info(
+            "**Item Setup tab** — This module replicates the item onboarding workflow from the JD. "
+            "Each defect type (missing routing, incorrect reorder point, missing integration) maps to a "
+            "specific fix recommendation. The before/after chart shows setup completion rate improvement — "
+            "this is the 52% reduction in unresolved setup issues mentioned in the resume.",
+            icon="🗺"
+        )
 
     d1, d2, d3, d4 = st.columns(4)
     defect_df = pd.read_sql(
@@ -892,6 +987,16 @@ with t3:
 # ════════════════════════════════════════════════════════════════
 with t4:
     st.markdown("##### Supply Disruption Alerts — Substitution & Communication Plans")
+
+    if guided_tour:
+        st.info(
+            "**Disruption Alerts tab** — Three workflows in one: (1) stockout alerts with clinical-equivalent "
+            "substitution options pulled from the 200-SKU catalog, (2) surplus rotation candidates with "
+            "cross-site transfer recommendations, and (3) AI-generated communication plans (add a Groq API key). "
+            "This tab directly mirrors JD responsibilities: proactively identify disruptions, surface substitution "
+            "options, generate stakeholder communication plans.",
+            icon="🗺"
+        )
 
     a1, a2, a3 = st.columns(3)
     a1.metric("🔴 Stockout Alerts",          m["stockouts"],
