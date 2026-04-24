@@ -27,75 +27,62 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
-html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; background-color: #060B18; }
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; background-color: #04080F; }
 #MainMenu, footer, header { visibility: hidden; }
-.block-container { padding-top: 0 !important; padding-bottom: 2rem; max-width: 1400px; }
+.block-container { padding-top: 0 !important; padding-bottom: 2.5rem; max-width: 1440px; }
 [data-testid="metric-container"] {
-  background: linear-gradient(135deg, #0D1629 0%, #0A1120 100%);
-  border: 1px solid #1A2840; border-radius: 12px; padding: 1.1rem 1.3rem;
-  position: relative; overflow: hidden; transition: border-color .2s;
+  background: #080F1E; border: 1px solid rgba(59,130,246,0.15); border-radius: 14px;
+  padding: 1.1rem 1.3rem; position: relative; overflow: hidden;
+  transition: border-color .25s, box-shadow .25s; box-shadow: 0 2px 12px rgba(0,0,0,0.4);
 }
-[data-testid="metric-container"]:hover { border-color: #2A4080; }
+[data-testid="metric-container"]:hover { border-color: rgba(59,130,246,0.4); box-shadow: 0 4px 24px rgba(59,130,246,0.08); }
 [data-testid="metric-container"]::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, #3B82F6, #06B6D4); opacity: 0.7;
+  background: linear-gradient(90deg, #3B82F6 0%, #06B6D4 50%, #8B5CF6 100%); opacity: 0.8;
 }
-[data-testid="metric-container"] label {
-  font-size: 11px !important; text-transform: uppercase; letter-spacing: .08em;
-  color: #5A7A9C !important; font-family: 'DM Sans', sans-serif !important; font-weight: 500 !important;
-}
-[data-testid="metric-container"] [data-testid="stMetricValue"] {
-  font-size: 1.85rem !important; font-weight: 700 !important;
-  font-family: 'Syne', sans-serif !important; color: #E8F0FF !important;
-}
-.stTabs [data-baseweb="tab-list"] { gap: 0; border-bottom: 1px solid #1A2840; background: transparent; margin-bottom: 1.2rem; }
-.stTabs [data-baseweb="tab"] {
-  padding: .7rem 1.4rem; font-size: 13px; font-weight: 600; color: #5A7A9C;
-  border-bottom: 2px solid transparent; font-family: 'DM Sans', sans-serif; letter-spacing: .02em;
-}
-.stTabs [aria-selected="true"] { color: #E8F0FF !important; border-bottom: 2px solid #3B82F6 !important; background: transparent !important; }
+[data-testid="metric-container"] label { font-size: 10.5px !important; text-transform: uppercase; letter-spacing: .1em; color: #4A6A8A !important; font-family: 'DM Sans', sans-serif !important; font-weight: 600 !important; }
+[data-testid="metric-container"] [data-testid="stMetricValue"] { font-size: 1.9rem !important; font-weight: 700 !important; font-family: 'Syne', sans-serif !important; color: #EDF4FF !important; letter-spacing: -.02em; }
+.stTabs [data-baseweb="tab-list"] { gap: 4px; border-bottom: 1px solid rgba(255,255,255,0.06); background: transparent; margin-bottom: 1.5rem; }
+.stTabs [data-baseweb="tab"] { padding: .65rem 1.3rem; font-size: 12.5px; font-weight: 600; color: #4A6A8A; border-bottom: 2px solid transparent; font-family: 'DM Sans', sans-serif; letter-spacing: .02em; border-radius: 8px 8px 0 0; transition: color .15s, background .15s; }
+.stTabs [data-baseweb="tab"]:hover { color: #93C5FD; background: rgba(59,130,246,0.04); }
+.stTabs [aria-selected="true"] { color: #E8F0FF !important; border-bottom: 2px solid #3B82F6 !important; background: rgba(59,130,246,0.06) !important; }
 .stTabs [data-baseweb="tab-highlight"], .stTabs [data-baseweb="tab-border"] { display: none; }
-.stButton > button {
-  font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13px;
-  border-radius: 8px; padding: .45rem 1.2rem; border: 1px solid #1A2840 !important;
-  background: #0D1629 !important; color: #93C5FD !important; transition: all .2s;
-}
-.stButton > button:hover { background: #1A2840 !important; border-color: #3B82F6 !important; }
-.stTextArea textarea, .stTextInput input, .stSelectbox > div > div {
-  background: #080E1C !important; border: 1px solid #1A2840 !important;
-  border-radius: 8px !important; color: #E8F0FF !important;
-}
-[data-testid="stSidebar"] { background: #070C1A; border-right: 1px solid #1A2840; }
-div[data-testid="stDataFrame"] { border: 1px solid #1A2840; border-radius: 10px; overflow: hidden; }
+.stButton > button { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13px; border-radius: 9px; padding: .5rem 1.3rem; border: 1px solid rgba(59,130,246,0.25) !important; background: rgba(59,130,246,0.06) !important; color: #93C5FD !important; transition: all .2s; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.stButton > button:hover { background: rgba(59,130,246,0.14) !important; border-color: rgba(59,130,246,0.5) !important; box-shadow: 0 2px 12px rgba(59,130,246,0.15) !important; }
+.stTextArea textarea, .stTextInput input, .stSelectbox > div > div { background: #060C18 !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 9px !important; color: #E8F0FF !important; }
+[data-testid="stSidebar"] { background: linear-gradient(180deg, #060C1A 0%, #040810 100%); border-right: 1px solid rgba(255,255,255,0.06); }
+div[data-testid="stDataFrame"] { border: 1px solid rgba(59,130,246,0.12); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.3); }
 .hero-wrapper {
-  background: linear-gradient(180deg, #080E20 0%, #060B18 100%);
-  border-bottom: 1px solid #1A2840; padding: 2.8rem 2rem 2rem;
-  margin: 0 -1rem 2rem; position: relative; overflow: hidden;
+  background: radial-gradient(ellipse 80% 60% at 60% -10%, rgba(59,130,246,0.08) 0%, transparent 60%), linear-gradient(180deg, #070E1E 0%, #04080F 100%);
+  border-bottom: 1px solid rgba(59,130,246,0.1); padding: 3rem 2rem 2.2rem; margin: 0 -1rem 2rem; position: relative; overflow: hidden;
 }
-.hero-title { font-family: 'Syne', sans-serif; font-size: 2.4rem; font-weight: 800; color: #F0F6FF; line-height: 1.1; letter-spacing: -.03em; margin-bottom: .6rem; }
-.hero-title span { color: #3B82F6; }
-.hero-sub { font-size: 15px; color: #5A7A9C; font-weight: 400; max-width: 560px; line-height: 1.6; margin-bottom: 1.6rem; }
-.insight-card { background: linear-gradient(135deg, #0D1629 0%, #091020 100%); border: 1px solid #1A2840; border-radius: 12px; padding: 1.2rem 1.4rem; height: 100%; position: relative; overflow: hidden; }
+.hero-title { font-family: 'Syne', sans-serif; font-size: 2.6rem; font-weight: 800; color: #F0F6FF; line-height: 1.08; letter-spacing: -.04em; margin-bottom: .7rem; text-shadow: 0 2px 20px rgba(59,130,246,0.15); }
+.hero-title span { color: #60A5FA; }
+.hero-sub { font-size: 15px; color: #4A6A8A; font-weight: 400; max-width: 560px; line-height: 1.7; margin-bottom: 1.8rem; }
+.insight-card { background: linear-gradient(145deg, #0A1220 0%, #070C18 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 1.4rem 1.5rem; height: 100%; position: relative; overflow: hidden; transition: border-color .2s, box-shadow .2s; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.insight-card:hover { border-color: rgba(59,130,246,0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
 .insight-card-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
-.section-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: #5A7A9C; margin-bottom: 10px; }
-.section-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; color: #E8F0FF; margin-bottom: 14px; }
-.or-card { background: linear-gradient(135deg, #0A1628 0%, #081020 100%); border: 1px solid #1A3050; border-radius: 12px; padding: 1.2rem 1.4rem; }
-.or-metric { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 700; color: #93C5FD; }
-.or-label { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: #5A7A9C; font-weight: 600; margin-bottom: 4px; }
-.or-sub { font-size: 12px; color: #3A5A7C; margin-top: 4px; }
-.badge { display: inline-block; border-radius: 5px; padding: 2px 9px; font-size: 11px; font-weight: 700; letter-spacing: .03em; }
-.badge-expired  { background: rgba(239,68,68,.1);   border: 1px solid rgba(239,68,68,.3);   color: #FCA5A5; }
-.badge-warn30   { background: rgba(249,115,22,.1);   border: 1px solid rgba(249,115,22,.3);   color: #FDBA74; }
-.badge-warn60   { background: rgba(245,158,11,.1);   border: 1px solid rgba(245,158,11,.3);   color: #FCD34D; }
-.badge-ok       { background: rgba(16,185,129,.1);   border: 1px solid rgba(16,185,129,.3);   color: #6EE7B7; }
-.badge-critical { background: rgba(239,68,68,.12);   border: 1px solid rgba(239,68,68,.35);   color: #F87171; }
-.badge-cold     { background: rgba(6,182,212,.1);    border: 1px solid rgba(6,182,212,.3);    color: #67E8F9; }
-.divider { border: none; border-top: 1px solid #1A2840; margin: 14px 0; }
-.streamlit-expanderHeader { background: #0D1629 !important; border: 1px solid #1A2840 !important; border-radius: 10px !important; font-size: 13px !important; font-weight: 600 !important; color: #93C5FD !important; }
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #080E1C; }
-::-webkit-scrollbar-thumb { background: #1A2840; border-radius: 3px; }
+.section-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; color: #3A5A7C; margin-bottom: 10px; }
+.section-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; color: #E8F0FF; margin-bottom: 14px; letter-spacing: -.01em; }
+.or-card { background: linear-gradient(145deg, #090F20 0%, #070C18 100%); border: 1px solid rgba(59,130,246,0.18); border-radius: 14px; padding: 1.3rem 1.4rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.or-metric { font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 700; color: #93C5FD; letter-spacing: -.02em; }
+.or-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: #3A5A7C; font-weight: 700; margin-bottom: 4px; }
+.or-sub { font-size: 11.5px; color: #2A4060; margin-top: 3px; }
+.badge { display: inline-flex; align-items: center; border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 700; letter-spacing: .04em; white-space: nowrap; }
+.badge-expired  { background: rgba(239,68,68,.08);   border: 1px solid rgba(239,68,68,.25);   color: #FCA5A5; }
+.badge-warn30   { background: rgba(249,115,22,.08);  border: 1px solid rgba(249,115,22,.25);  color: #FDBA74; }
+.badge-warn60   { background: rgba(245,158,11,.08);  border: 1px solid rgba(245,158,11,.25);  color: #FCD34D; }
+.badge-ok       { background: rgba(16,185,129,.08);  border: 1px solid rgba(16,185,129,.25);  color: #6EE7B7; }
+.badge-critical { background: rgba(239,68,68,.10);   border: 1px solid rgba(239,68,68,.3);    color: #F87171; }
+.badge-cold     { background: rgba(6,182,212,.08);   border: 1px solid rgba(6,182,212,.25);   color: #67E8F9; }
+.divider { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 12px 0; }
+.streamlit-expanderHeader { background: #080F1E !important; border: 1px solid rgba(59,130,246,0.15) !important; border-radius: 10px !important; font-size: 13px !important; font-weight: 600 !important; color: #93C5FD !important; }
+.stDownloadButton > button { border-color: rgba(16,185,129,0.25) !important; background: rgba(16,185,129,0.05) !important; color: #6EE7B7 !important; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #04080F; }
+::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.35); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -816,8 +803,9 @@ with t5:
         fig_fill.add_vline(x=95, line_dash="dash", line_color=AMBER,
                            annotation_text="95% target", annotation_font_color=AMBER)
         fig_fill.update_layout(**PLOT_LAYOUT, height=280,
-            xaxis=dict(showgrid=False, showline=False, title="Fill Rate (%)",
-                       titlefont=dict(color=SUB,size=11), tickfont=dict(color=SUB)),
+            xaxis=dict(showgrid=False, showline=False,
+                       title=dict(text="Fill Rate (%)", font=dict(color=SUB, size=11)),
+                       tickfont=dict(color=SUB)),
             yaxis=dict(showgrid=False, showline=False, showticklabels=False))
         st.plotly_chart(fig_fill, use_container_width=True, config={"displayModeBar":False})
 
@@ -850,8 +838,12 @@ with t5:
                               annotation_text=f"EOQ = {item['eoq']} units", annotation_font_color=BLUE,
                               annotation_position="top right")
             fig_eoq.update_layout(**PLOT_LAYOUT, height=280,
-                xaxis=dict(showgrid=False,showline=False,title="Order Quantity (units)",titlefont=dict(color=SUB,size=11),tickfont=dict(color=SUB)),
-                yaxis=dict(showgrid=False,showline=False,title="Annual Cost ($)",titlefont=dict(color=SUB,size=11),tickfont=dict(color=SUB,size=10)),
+                xaxis=dict(showgrid=False,showline=False,
+                           title=dict(text="Order Quantity (units)", font=dict(color=SUB,size=11)),
+                           tickfont=dict(color=SUB)),
+                yaxis=dict(showgrid=False,showline=False,
+                           title=dict(text="Annual Cost ($)", font=dict(color=SUB,size=11)),
+                           tickfont=dict(color=SUB,size=10)),
                 legend=dict(font=dict(size=10,color="#8BA4C0"),bgcolor="rgba(0,0,0,0)",orientation="h",x=0,y=1.12))
             st.plotly_chart(fig_eoq, use_container_width=True, config={"displayModeBar":False})
 
@@ -916,7 +908,9 @@ with t5:
                           annotation_text="Avg demand", annotation_font_color=AMBER)
         fig_dem.update_layout(**PLOT_LAYOUT, height=260,
             xaxis=dict(showgrid=False,showline=False,tickfont=dict(color=SUB,size=10)),
-            yaxis=dict(showgrid=False,showline=False,title="Units/day",titlefont=dict(color=SUB,size=10),tickfont=dict(color=SUB,size=10)),
+            yaxis=dict(showgrid=False,showline=False,
+                       title=dict(text="Units/day", font=dict(color=SUB,size=10)),
+                       tickfont=dict(color=SUB,size=10)),
             legend=dict(font=dict(size=10,color="#8BA4C0"),bgcolor="rgba(0,0,0,0)",orientation="h",x=0,y=1.12))
         st.plotly_chart(fig_dem, use_container_width=True, config={"displayModeBar":False})
 
