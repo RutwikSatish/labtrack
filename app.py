@@ -411,7 +411,11 @@ with st.sidebar:
 
     guided_tour = st.toggle("🗺 Guided Tour", value=False)
     st.markdown('<hr style="border-color:#1A2840;margin:14px 0;">', unsafe_allow_html=True)
-    groq_key = st.text_input("Groq API Key (optional)", type="password", placeholder="gsk_... unlock AI plans")
+    _groq_available = bool(st.secrets.get("GROQ_API_KEY", ""))
+    if _groq_available:
+        st.markdown('<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:8px 12px;font-size:11.5px;color:#6EE7B7;display:flex;align-items:center;gap:6px;"><span>✅</span><span><b>AI Active</b> — Groq connected</span></div>', unsafe_allow_html=True)
+    else:
+        st.markdown('<div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:8px 12px;font-size:11.5px;color:#FCD34D;display:flex;align-items:center;gap:6px;"><span>⚠️</span><span>Add <code>GROQ_API_KEY</code> to Streamlit secrets to enable AI</span></div>', unsafe_allow_html=True)
     st.markdown('<hr style="border-color:#1A2840;margin:14px 0;">', unsafe_allow_html=True)
 
     st.markdown('<p style="font-size:11px;font-weight:700;color:#E8F0FF;margin-bottom:6px;letter-spacing:.04em;">🏥 NETWORK SITES</p>', unsafe_allow_html=True)
@@ -425,58 +429,150 @@ for k, v in scen["overrides"].items():
     m_display[k] = v
 
 # ══════════════════════════════════════════════════════════════
-# HERO
+# LANDING PAGE — Fully redesigned
 # ══════════════════════════════════════════════════════════════
-st.markdown("""
-<div class="hero-wrapper">
-  <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;color:#93C5FD;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem;">🔬 Clinical Operations Intelligence · AI + OR</div>
-  <div class="hero-title">Stop discovering supply failures<br><span>after</span> production stops.</div>
-  <div class="hero-sub">LabTrack combines Operations Research optimization (EOQ, safety stock, service levels) with AI-powered communication to manage 220+ lot-controlled SKUs across a 6-site clinical network. Built on the AI + OR synergy framework for biopharmaceutical operations.</div>
+cold_count = int(items_df["is_cold_chain"].sum())
+ai_status  = "🟢 AI Active" if st.secrets.get("GROQ_API_KEY","") else "⚪ AI Offline"
+
+# ── Top bar ──
+st.markdown(f"""
+<div style="background:linear-gradient(90deg,rgba(59,130,246,0.06) 0%,rgba(6,182,212,0.04) 100%);
+     border-bottom:1px solid rgba(59,130,246,0.12);padding:10px 24px;
+     display:flex;align-items:center;justify-content:space-between;margin:0 -1rem 0;font-size:12px;">
+  <div style="display:flex;align-items:center;gap:20px;color:#4A6A8A;">
+    <span style="color:#60A5FA;font-weight:700;font-family:'Syne',sans-serif;font-size:15px;letter-spacing:-.02em;">🔬 LabTrack</span>
+    <span>Clinical Supply Intelligence v3.0</span>
+    <span style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);
+          color:#6EE7B7;border-radius:20px;padding:2px 10px;font-weight:700;font-size:11px;">{ai_status}</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;color:#3A5A7C;font-size:11px;">
+    <span>6 sites</span><span>·</span><span>{m_display["total_skus"]} SKUs</span>
+    <span>·</span><span>Synced {TODAY.strftime("%b %d %Y")}</span>
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
-col_a, col_b, col_c = st.columns(3, gap="medium")
-with col_a:
-    st.markdown(f"""<div class="insight-card"><div class="insight-card-accent" style="background:linear-gradient(90deg,#EF4444,#F97316);"></div>
-    <div style="font-size:22px;margin-bottom:10px;">🚨</div>
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:8px;color:#FCA5A5;">The Problem</div>
-    <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#E8F0FF;margin-bottom:6px;">Reactive management costs lives and money</div>
-    <div style="font-size:12.5px;color:#5A7A9C;line-height:1.6;">220+ reagents tracked in spreadsheets. Expired kits fail tests. Stockouts halt diagnostics. No one runs an EOQ calculation before placing an order.</div>
-    <div style="display:inline-block;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;color:#FCA5A5;margin-top:8px;">${m_display['exp_risk_val']:,.0f} expiry risk today</div>
-    </div>""", unsafe_allow_html=True)
-with col_b:
-    st.markdown(f"""<div class="insight-card"><div class="insight-card-accent" style="background:linear-gradient(90deg,#3B82F6,#06B6D4);"></div>
-    <div style="font-size:22px;margin-bottom:10px;">⚗️</div>
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:8px;color:#93C5FD;">OR + AI Solution</div>
-    <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#E8F0FF;margin-bottom:6px;">Optimize first. Communicate second.</div>
-    <div style="font-size:12.5px;color:#5A7A9C;line-height:1.6;">EOQ minimizes total cost. Safety stock is computed from service-level targets. AI explains the recommendations in plain English for clinical teams — the AI + OR synergy.</div>
-    <div style="display:inline-block;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;color:#93C5FD;margin-top:8px;">OR-computed reorder points for all {m['total_skus']} SKUs</div>
-    </div>""", unsafe_allow_html=True)
-with col_c:
-    cold_count = int(items_df["is_cold_chain"].sum())
-    st.markdown(f"""<div class="insight-card"><div class="insight-card-accent" style="background:linear-gradient(90deg,#10B981,#06B6D4);"></div>
-    <div style="font-size:22px;margin-bottom:10px;">🏥</div>
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:8px;color:#6EE7B7;">Network Coverage</div>
-    <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#E8F0FF;margin-bottom:6px;">6-site health system · Full 3PL visibility</div>
-    <div style="font-size:12.5px;color:#5A7A9C;line-height:1.6;">8 reagent categories including {cold_count} cold-chain items. Demand history, lot traceability, and cross-site substitution catalog all in one platform.</div>
-    <div style="display:inline-block;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;color:#6EE7B7;margin-top:8px;">{cold_count} cold-chain SKUs · {m_display['cold_risk']} at risk</div>
-    </div>""", unsafe_allow_html=True)
+# ── Hero split layout ──
+h_left, h_right = st.columns([1.1, 0.9], gap="large")
 
-st.markdown("<br>", unsafe_allow_html=True)
+with h_left:
+    st.markdown(f"""
+    <div style="padding:2.5rem 0 1.5rem;">
+      <div style="display:inline-flex;align-items:center;gap:8px;
+           background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);
+           border-radius:20px;padding:5px 16px;font-size:11px;font-weight:700;
+           color:#60A5FA;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.4rem;">
+        ⚗️ AI + Operations Research · Biomanufacturing
+      </div>
+      <div style="font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;
+           color:#F0F6FF;line-height:1.05;letter-spacing:-.04em;margin-bottom:1rem;
+           text-shadow:0 4px 32px rgba(59,130,246,0.12);">
+        Supply failures<br>discovered <span style="color:#60A5FA;">before</span><br>they happen.
+      </div>
+      <div style="font-size:15px;color:#4A6A8A;line-height:1.75;max-width:480px;margin-bottom:1.8rem;">
+        LabTrack monitors {m_display["total_skus"]} lot-controlled SKUs across a 6-site clinical network.
+        OR models compute optimal reorder quantities. AI explains every recommendation
+        in plain English — the AI + OR synergy for biopharmaceutical operations.
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);
+             border-radius:10px;padding:10px 16px;min-width:120px;">
+          <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;color:#FCA5A5;">${m_display["exp_risk_val"]/1000:.0f}K</div>
+          <div style="font-size:10.5px;color:#6A3A3A;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-top:2px;">Expiry Risk</div>
+        </div>
+        <div style="background:rgba(249,115,22,0.07);border:1px solid rgba(249,115,22,0.2);
+             border-radius:10px;padding:10px 16px;min-width:120px;">
+          <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;color:#FDBA74;">{m_display["stockouts"]}</div>
+          <div style="font-size:10.5px;color:#6A4A1A;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-top:2px;">Active Stockouts</div>
+        </div>
+        <div style="background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.2);
+             border-radius:10px;padding:10px 16px;min-width:120px;">
+          <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;color:#67E8F9;">{cold_count}</div>
+          <div style="font-size:10.5px;color:#1A4A5A;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-top:2px;">Cold Chain SKUs</div>
+        </div>
+        <div style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.2);
+             border-radius:10px;padding:10px 16px;min-width:120px;">
+          <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;color:#C4B5FD;">{m_display["defects"]}</div>
+          <div style="font-size:10.5px;color:#3A2A6A;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-top:2px;">Setup Defects</div>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-mc1,mc2,mc3,mc4,mc5,mc6 = st.columns(6)
-mc1.metric("Total SKUs",           f"{m_display['total_skus']:,}")
-mc2.metric("⚠ Expiry Risk",        f"${m_display['exp_risk_val']:,.0f}")
-mc3.metric("🔴 Stockouts",         str(m_display["stockouts"]),
-           delta=str(m_display["stockouts"]-m["stockouts"]) if m_display["stockouts"]!=m["stockouts"] else None, delta_color="inverse")
-mc4.metric("⚙ Setup Defects",      str(m_display["defects"]),
-           delta=str(m_display["defects"]-m["defects"]) if m_display["defects"]!=m["defects"] else None, delta_color="inverse")
-mc5.metric("❄ Cold Chain Risk",    str(m_display["cold_risk"]))
-mc6.metric("📦 Overstock Waste",   f"${m_display['surplus_val']:,.0f}")
+with h_right:
+    # AI Brief button — generates a live executive brief
+    st.markdown("""
+    <div style="padding:2rem 0 0;">
+      <div style="background:linear-gradient(145deg,#090F20,#060C18);
+           border:1px solid rgba(59,130,246,0.2);border-radius:16px;
+           padding:1.6rem;box-shadow:0 8px 40px rgba(0,0,0,0.4),inset 0 1px 0 rgba(59,130,246,0.06);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+          <div style="width:36px;height:36px;border-radius:10px;
+               background:linear-gradient(135deg,#3B82F6,#8B5CF6);
+               display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🤖</div>
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#E8F0FF;">AI Executive Brief</div>
+            <div style="font-size:11px;color:#3A5A7C;">Network-wide risk summary · Powered by Groq Llama 3.3</div>
+          </div>
+        </div>
+        <div style="font-size:12.5px;color:#3A5A7C;line-height:1.7;margin-bottom:1rem;">
+          Generates a plain-English executive summary of the current network state —
+          top 3 risks, priority actions, and OR-based recommendations — in under 30 seconds.
+        </div>
+    """, unsafe_allow_html=True)
 
+    if st.button("⚡ Generate AI Network Brief", use_container_width=True, key="hero_ai_brief"):
+        groq_api = st.secrets.get("GROQ_API_KEY", "")
+        if not groq_api:
+            st.warning("Add GROQ_API_KEY to Streamlit secrets to enable AI briefs.", icon="⚠️")
+        else:
+            with st.spinner("Generating brief..."):
+                try:
+                    from groq import Groq
+                    client = Groq(api_key=groq_api)
+                    prompt = f"""You are a clinical supply chain intelligence system. Write a concise executive brief (under 180 words) for a hospital network supply chain director.
+NETWORK STATE:
+- {m_display["total_skus"]} SKUs across 6 sites (Main Campus, Cobble Hill, Long Island, Midtown, Perlmutter Cancer Center, Orthopedic Hospital)
+- Expiry risk value: ${m_display["exp_risk_val"]:,.0f} (inventory expiring within 60 days)
+- Active stockouts: {m_display["stockouts"]} items below reorder point
+- Setup defects: {m_display["defects"]} items with missing routing, incorrect ROP, or missing system integration
+- Cold chain at risk: {m_display["cold_risk"]} items
+- Overstock waste: ${m_display["surplus_val"]:,.0f}
+- Scenario: {scenario_name}
+Write: (1) SITUATION — one sentence (2) TOP 3 RISKS — each with a number from the data (3) PRIORITY ACTIONS — 3 bullets with specific steps (4) OR INSIGHT — one sentence on what the EOQ/safety stock optimization shows. Be direct and specific. No fluff."""
+                    resp = client.chat.completions.create(
+                        model="llama-3.3-70b-versatile", max_tokens=400,
+                        messages=[{"role":"user","content":prompt}]
+                    )
+                    brief = resp.choices[0].message.content.strip()
+                    st.markdown(f"""
+                    <div style="background:rgba(59,130,246,0.04);border:1px solid rgba(59,130,246,0.15);
+                         border-left:3px solid #3B82F6;border-radius:0 10px 10px 0;
+                         padding:14px 16px;font-size:12.5px;color:#C8D8F0;line-height:1.8;
+                         white-space:pre-wrap;margin-top:8px;">{brief}</div>""", unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"Error: {e}")
+
+    st.markdown("""
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.05);">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);color:#6EE7B7;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;">EOQ Optimization</span>
+            <span style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);color:#93C5FD;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;">Safety Stock · 95% SL</span>
+            <span style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);color:#C4B5FD;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;">Demand Forecasting</span>
+            <span style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.15);color:#67E8F9;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;">Cold Chain Tracking</span>
+            <span style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);color:#FCD34D;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;">PPAP · AIAG 4th Ed.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ── Divider before tabs ──
+st.markdown('<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,0.2),transparent);margin:1.5rem 0;"></div>', unsafe_allow_html=True)
+
+# ── Scenario banner ──
 if scen["banner"]: st.error(f"🚨 {scen['banner']}")
 if scen["note"]:   st.success(f"✅ {scen['note']}")
-st.markdown("<br>", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════
 # TABS
@@ -701,11 +797,11 @@ with t4:
                     st.markdown(f'<div style="background:#0D1629;border:1px solid #1A2840;border-radius:9px;padding:10px 14px;margin:4px 0;"><span style="font-size:13px;font-weight:600;color:#E8F0FF;">{sub["sub_name"]}</span><span style="margin-left:10px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:#93C5FD;border-radius:4px;padding:1px 8px;font-size:11px;">{sub["compatibility"]}</span><span style="margin-left:10px;font-size:11.5px;color:#5A7A9C;">Network stock: {sv} units · {sub["sub_supplier"]}</span></div>',unsafe_allow_html=True)
 
             sub_list = ", ".join(subs["sub_name"].tolist()) if not subs.empty else "none identified"
-            if groq_key:
+            if st.secrets.get("GROQ_API_KEY", ""):
                 if st.button(f"🤖 Generate AI Communication Plan — {row['sku_id']}", key=f"cp_{row['sku_id']}"):
                     try:
                         from groq import Groq
-                        client = Groq(api_key=groq_key)
+                        client = Groq(api_key=st.secrets.get("GROQ_API_KEY",""))
                         prompt = f"""You are a clinical supply chain analyst. Write a professional itemised communication plan for a stockout.
 Under 150 words. Plain bullet points. Reference the OR-computed reorder quantity where relevant.
 ITEM: {row['name']} ({row['sku_id']})  CATEGORY: {row['category']}
@@ -916,11 +1012,11 @@ with t5:
 
         # ── AI Explains the OR Recommendation ──
         st.markdown('<div class="section-label" style="margin-top:8px;">🤖 AI Explains the OR Recommendation</div>',unsafe_allow_html=True)
-        if groq_key:
+        if st.secrets.get("GROQ_API_KEY", ""):
             if st.button(f"Generate AI Explanation for {item['name']}", key=f"or_explain_{selected_sku}"):
                 try:
                     from groq import Groq
-                    client = Groq(api_key=groq_key)
+                    client = Groq(api_key=st.secrets.get("GROQ_API_KEY",""))
                     prompt = f"""You are a supply chain operations researcher explaining an OR optimization result to a clinical lab manager who is not familiar with OR terminology.
 Write a plain-English explanation in 3 short paragraphs (no more than 120 words total).
 ITEM: {item['name']} — {item['category']}
